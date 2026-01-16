@@ -18,22 +18,31 @@ export class TodoPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.newTodoInput = page.locator('.new-todo');
-    this.todoList = page.locator('.todo-list');
-    this.todoItems = page.locator('.todo-list li');
-    this.todoCount = page.locator('.todo-count');
-    this.filterAll = page.locator('a[href="#/"]');
-    this.filterActive = page.locator('a[href="#/active"]');
-    this.filterCompleted = page.locator('a[href="#/completed"]');
-    this.clearCompleted = page.locator('.clear-completed');
-    this.toggleAll = page.locator('.toggle-all');
+    // Probar múltiples selectores comunes de TodoMVC
+    this.newTodoInput = page.locator('input.new-todo, input[placeholder*="todo" i], input[placeholder*="What needs" i], input[class*="new"]').first();
+    this.todoList = page.locator('.todo-list, ul.todo-list, section.todo-list').first();
+    this.todoItems = page.locator('.todo-list li, ul.todo-list li, section.todo-list li');
+    this.todoCount = page.locator('.todo-count, span.todo-count, .todo-count strong').first();
+    this.filterAll = page.locator('a[href="#/"], a[href="/"], .filters a').first();
+    this.filterActive = page.locator('a[href="#/active"], .filters a[href*="active"]').first();
+    this.filterCompleted = page.locator('a[href="#/completed"], .filters a[href*="completed"]').first();
+    this.clearCompleted = page.locator('.clear-completed, button.clear-completed').first();
+    this.toggleAll = page.locator('.toggle-all, input.toggle-all, label[for="toggle-all"]').first();
   }
 
   /**
    * Navega a la aplicación ToDo
    */
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    // Usar la URL completa en lugar de confiar solo en baseURL
+    await this.page.goto('https://demo.playwright.dev/todomvc/', { 
+      waitUntil: 'networkidle',
+      timeout: 60000 
+    });
+    // Esperar a que el body esté presente
+    await this.page.waitForSelector('body', { state: 'visible' });
+    // Esperar un momento para que la aplicación se inicialice
+    await this.page.waitForTimeout(2000);
   }
 
   /**
@@ -41,8 +50,12 @@ export class TodoPage {
    * @param taskText - Texto de la tarea a agregar
    */
   async addTask(taskText: string): Promise<void> {
+    // Esperar a que el input esté visible antes de interactuar
+    await this.newTodoInput.waitFor({ state: 'visible', timeout: 10000 });
     await this.newTodoInput.fill(taskText);
     await this.newTodoInput.press('Enter');
+    // Esperar un momento para que la tarea se agregue
+    await this.page.waitForTimeout(500);
   }
 
   /**
@@ -60,7 +73,17 @@ export class TodoPage {
    * @returns Número de tareas visibles
    */
   async getTaskCount(): Promise<number> {
-    return await this.todoItems.count();
+    // Contar solo las tareas visibles (no las ocultas por filtros)
+    const allItems = this.todoItems;
+    const count = await allItems.count();
+    let visibleCount = 0;
+    for (let i = 0; i < count; i++) {
+      const item = allItems.nth(i);
+      if (await item.isVisible()) {
+        visibleCount++;
+      }
+    }
+    return visibleCount;
   }
 
   /**
@@ -78,7 +101,13 @@ export class TodoPage {
    */
   async verifyTaskNotExists(taskText: string): Promise<void> {
     const task = this.todoItems.filter({ hasText: taskText });
-    await expect(task).not.toBeVisible();
+    // Verificar que la tarea no está visible (puede estar oculta por filtros)
+    // o que el conteo es 0 si buscamos por texto exacto
+    const count = await task.count();
+    if (count > 0) {
+      // Si existe en el DOM, debe estar oculta
+      await expect(task.first()).not.toBeVisible();
+    }
   }
 
   /**
@@ -132,6 +161,8 @@ export class TodoPage {
    */
   async filterAllTasks(): Promise<void> {
     await this.filterAll.click();
+    // Esperar a que el filtro se aplique
+    await this.page.waitForTimeout(500);
   }
 
   /**
@@ -139,6 +170,10 @@ export class TodoPage {
    */
   async filterActiveTasks(): Promise<void> {
     await this.filterActive.click();
+    // Esperar a que el filtro se aplique y la vista se actualice
+    await this.page.waitForTimeout(500);
+    // Esperar a que el DOM se actualice después del filtro
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**
@@ -146,6 +181,10 @@ export class TodoPage {
    */
   async filterCompletedTasks(): Promise<void> {
     await this.filterCompleted.click();
+    // Esperar a que el filtro se aplique y la vista se actualice
+    await this.page.waitForTimeout(500);
+    // Esperar a que el DOM se actualice después del filtro
+    await this.page.waitForLoadState('networkidle');
   }
 
   /**

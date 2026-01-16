@@ -18,6 +18,12 @@ test.describe('Escenarios Obligatorios - Aplicación ToDo', () => {
     return `CP-${cpId}_${modulo}_${dateStr}.png`;
   }
 
+  // Función helper para obtener la ruta completa de evidencia
+  function getEvidencePath(fileName: string): string {
+    // Usar process.cwd() para obtener el directorio raíz del proyecto
+    return path.join(process.cwd(), 'Documento_de_casos_de_pruebas', 'Evidencias', fileName);
+  }
+
   // Fixture para inicializar la página antes de cada test
   test.beforeEach(async ({ page }) => {
     todoPage = new TodoPage(page);
@@ -35,7 +41,7 @@ test.describe('Escenarios Obligatorios - Aplicación ToDo', () => {
     expect(await todoPage.getTaskCount()).toBe(1);
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('001', 'Gestión de Tareas'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('001', 'Gestión de Tareas'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 
@@ -55,7 +61,7 @@ test.describe('Escenarios Obligatorios - Aplicación ToDo', () => {
     await expect(task).toHaveClass(/completed/);
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('002', 'Gestión de Tareas'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('002', 'Gestión de Tareas'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 
@@ -76,7 +82,7 @@ test.describe('Escenarios Obligatorios - Aplicación ToDo', () => {
     expect(await todoPage.getTaskCount()).toBe(0);
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('003', 'Gestión de Tareas'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('003', 'Gestión de Tareas'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 
@@ -103,7 +109,7 @@ test.describe('Escenarios Obligatorios - Aplicación ToDo', () => {
     expect(allTaskTexts).toEqual(expect.arrayContaining(tasks));
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('004', 'Gestión de Tareas'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('004', 'Gestión de Tareas'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 });

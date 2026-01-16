@@ -18,6 +18,12 @@ test.describe('Escenarios Bonus - Aplicación ToDo', () => {
     return `CP-${cpId}_${modulo}_${dateStr}.png`;
   }
 
+  // Función helper para obtener la ruta completa de evidencia
+  function getEvidencePath(fileName: string): string {
+    // Usar process.cwd() para obtener el directorio raíz del proyecto
+    return path.join(process.cwd(), 'Documento_de_casos_de_pruebas', 'Evidencias', fileName);
+  }
+
   // Fixture para inicializar la página antes de cada test
   test.beforeEach(async ({ page }) => {
     todoPage = new TodoPage(page);
@@ -52,7 +58,7 @@ test.describe('Escenarios Bonus - Aplicación ToDo', () => {
     expect(allTaskTexts).toEqual(expect.arrayContaining(tasks));
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('005', 'Persistencia de Datos'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('005', 'Persistencia de Datos'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 
@@ -101,7 +107,7 @@ test.describe('Escenarios Bonus - Aplicación ToDo', () => {
     }
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('006', 'Filtros'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('006', 'Filtros'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 
@@ -150,7 +156,7 @@ test.describe('Escenarios Bonus - Aplicación ToDo', () => {
     }
 
     // Tomar captura de pantalla como evidencia
-    const evidencePath = path.join(__dirname, '../Documento_de_casos_de_pruebas/Evidencias', getEvidenceFileName('007', 'Filtros'));
+    const evidencePath = getEvidencePath(getEvidenceFileName('007', 'Filtros'));
     await page.screenshot({ path: evidencePath, fullPage: true });
   });
 });
